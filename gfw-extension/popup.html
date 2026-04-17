@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GFW Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">G</div>
+      <h1>Get To Work</h1>
+    </div>
+    <label class="master-toggle" title="Enable/Disable">
+      <input type="checkbox" id="enableToggle" checked>
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value" id="statToday">0</div>
+      <div class="stat-label">Today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-label">All Time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statStreak">0</div>
+      <div class="stat-label">Streak</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Blocked Sites</span>
+    </div>
+    <textarea id="sitesList" placeholder="facebook.com&#10;twitter.com&#10;youtube.com"></textarea>
+    <div class="category-chips" id="categoryChips"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Focus Schedule</span>
+      <label class="small-toggle">
+        <input type="checkbox" id="scheduleToggle">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="schedule-row">
+      <input type="time" class="time-input" id="scheduleStart" value="09:00">
+      <span class="schedule-separator">→</span>
+      <input type="time" class="time-input" id="scheduleEnd" value="17:00">
+    </div>
+    <div class="day-pills" id="dayPills">
+      <div class="day-pill active" data-day="mon">M</div>
+      <div class="day-pill active" data-day="tue">T</div>
+      <div class="day-pill active" data-day="wed">W</div>
+      <div class="day-pill active" data-day="thu">T</div>
+      <div class="day-pill active" data-day="fri">F</div>
+      <div class="day-pill" data-day="sat">S</div>
+      <div class="day-pill" data-day="sun">S</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-save" id="saveBtn">Save</button>
+    <button class="btn btn-pause" id="pauseBtn">Pause</button>
+  </div>
+
+  <div class="pause-options" id="pauseOptions">
+    <button class="pause-option" data-minutes="5">5 min</button>
+    <button class="pause-option" data-minutes="10">10 min</button>
+    <button class="pause-option" data-minutes="15">15 min</button>
+    <button class="pause-option" data-minutes="30">30 min</button>
+  </div>
+
+  <div class="nuclear-section">
+    <button class="nuclear-btn" id="nuclearBtn">☢ NUCLEAR MODE — 1 HOUR</button>
+    <div class="nuclear-info">Cannot be undone. All blocked, no pause.</div>
+  </div>
+
+  <div class="toast" id="toast">Saved!</div>
+  <div class="footer">GFW v2.0</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

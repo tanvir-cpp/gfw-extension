@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GET BACK TO WORK</title>
+  <link rel="stylesheet" href="blocked.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="grain-overlay"></div>
+  <div class="vignette"></div>
+
+  <div class="container">
+    <div class="glitch-wrapper">
+      <h1 id="mainMessage" class="glitch" data-text="">GO FUCKING WORK.</h1>
+    </div>
+
+    <div class="sub-message" id="subMessage">You were trying to visit a distracting site.</div>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <span class="stat-number" id="todayCount">0</span>
+        <span class="stat-label">blocked today</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-number" id="totalCount">0</span>
+        <span class="stat-label">all time</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-number" id="streak">0</span>
+        <span class="stat-label">day streak</span>
+      </div>
+    </div>
+
+    <div class="quote-card" id="quoteCard">
+      <p id="quoteText"></p>
+      <span id="quoteAuthor"></span>
+    </div>
+
+    <div class="timer-section" id="timerSection" style="display:none;">
+      <div class="timer-label">NUCLEAR MODE ACTIVE</div>
+      <div class="timer" id="nuclearTimer">00:00</div>
+    </div>
+
+    <div class="actions">
+      <button id="closeBtn" class="btn btn-primary">CLOSE THIS TAB</button>
+    </div>
+
+    <div class="breathing-ring"></div>
+  </div>
+
+  <script src="blocked.js"></script>
+</body>
+</html>
