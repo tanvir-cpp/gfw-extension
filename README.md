@@ -16,7 +16,7 @@ An open-source, brutalist Chrome extension that cuts the bullshit. Blocks distra
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/gfw-extension.git
+   git clone https://github.com/tanvir-cpp/gfw-extension.git
    ```
 2. Open Chrome and navigate to `chrome://extensions/`.
 3. Enable **Developer Mode** using the toggle switch in the top right corner.
