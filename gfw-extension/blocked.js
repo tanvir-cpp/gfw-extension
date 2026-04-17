@@ -70,22 +70,30 @@
           const remaining = data.nuclearUntil - Date.now();
           if (remaining <= 0) {
             if (timerEl) timerEl.textContent = '00:00';
-            return;
+            return true;
           }
           const mins = Math.floor(remaining / 60000);
           const secs = Math.floor((remaining % 60000) / 1000);
           if (timerEl) timerEl.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-          requestAnimationFrame(tick);
+          return false;
         };
+
         tick();
+        const timerId = window.setInterval(() => {
+          if (tick()) {
+            window.clearInterval(timerId);
+          }
+        }, 1000);
       }
     });
   }
 
   // ── Sub-message with blocked site name ────────────────────────────
   const subMsg = document.getElementById('subMessage');
-  if (subMsg && window.__GFW_BLOCKED_SITE) {
-    subMsg.textContent = `You were trying to visit ${window.__GFW_BLOCKED_SITE}. Not today.`;
+  const params = new URLSearchParams(window.location.search);
+  const blockedSite = params.get('site');
+  if (subMsg && blockedSite) {
+    subMsg.textContent = `You were trying to visit ${blockedSite}. Not today.`;
   }
 
   // ── Close tab button ──────────────────────────────────────────────

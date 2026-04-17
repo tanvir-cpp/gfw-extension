@@ -5,7 +5,8 @@
   "description": "An aggressive productivity extension that blocks distracting websites, tracks your focus stats, and tells you to get back to work.",
   "permissions": [
     "storage",
-    "alarms"
+    "alarms",
+    "tabs"
   ],
   "background": {
     "service_worker": "background.js"
@@ -21,13 +22,13 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "js": ["shared.js", "content.js"],
       "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["blocked.html", "blocked.css", "blocked.js"],
+      "resources": ["blocked.html", "blocked.css", "blocked.js", "shared.js"],
       "matches": ["<all_urls>"]
     }
   ],

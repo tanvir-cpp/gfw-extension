@@ -32,7 +32,7 @@ body {
 }
 
 /* Toggle */
-.master-toggle { position: relative; width: 42px; height: 22px; cursor: pointer; }
+.master-toggle { position: relative; display: inline-block; width: 42px; height: 22px; cursor: pointer; }
 .master-toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -79,6 +79,34 @@ textarea {
 textarea:focus { outline: none; border-color: rgba(231,76,60,0.5); }
 textarea::placeholder { color: rgba(255,255,255,0.2); }
 
+.utility-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.8);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.utility-btn:hover:not(:disabled) {
+  border-color: rgba(231,76,60,0.35);
+  background: rgba(231,76,60,0.12);
+  color: #ffffff;
+}
+
+.utility-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* Category Chips */
 .category-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .chip {
@@ -95,14 +123,26 @@ textarea::placeholder { color: rgba(255,255,255,0.2); }
 }
 
 /* Schedule */
-.schedule-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.time-input {
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 6px; padding: 6px 10px; color: #e0e0e0;
-  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; width: 80px; text-align: center;
+.schedule-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 12px;
 }
-.time-input:focus { outline: none; border-color: rgba(231,76,60,0.5); }
-.schedule-separator { color: rgba(255,255,255,0.3); font-size: 12px; font-weight: 600; }
+.time-input-wrap { display: flex; flex-direction: column; align-items: center; }
+.time-input-label {
+  font-size: 0.55rem; text-transform: uppercase; color: rgba(255,255,255,0.4);
+  letter-spacing: 1px; margin-bottom: 4px; font-weight: 700;
+}
+.time-input {
+  background: transparent; border: none; color: #fff;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 1.15rem; font-weight: 800;
+  width: auto; text-align: center; outline: none; cursor: pointer;
+}
+.time-input::-webkit-calendar-picker-indicator {
+  filter: invert(1); opacity: 0.4; cursor: pointer; transition: opacity 0.2s;
+}
+.time-input::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+.schedule-separator { color: #e74c3c; font-size: 1.1rem; opacity: 0.6; font-weight: 800; padding: 0 10px; }
 
 .day-pills { display: flex; gap: 4px; }
 .day-pill {
@@ -115,7 +155,7 @@ textarea::placeholder { color: rgba(255,255,255,0.2); }
   background: rgba(231,76,60,0.2); border-color: rgba(231,76,60,0.5); color: #e74c3c;
 }
 
-.small-toggle { position: relative; width: 34px; height: 18px; cursor: pointer; }
+.small-toggle { position: relative; display: inline-block; width: 34px; height: 18px; cursor: pointer; }
 .small-toggle input { opacity: 0; width: 0; height: 0; }
 .small-toggle .toggle-slider {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;

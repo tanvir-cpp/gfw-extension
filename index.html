@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Get To F*cking Work | Open Source Productivity Extension</title>
+  <meta name="description" content="An aggressive open-source productivity Chrome extension that blocks distracting websites, tracks your focus stats, and tells you to get back to work.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000;
+      --text: #ffffff;
+      --text-muted: #888888;
+      --primary: #ff3333;
+      --border: #333333;
+      --font-display: 'JetBrains Mono', monospace;
+      --font-body: 'Space Grotesk', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: var(--primary);
+      color: #000;
+    }
+
+    /* ── Typography & Grid ─────────────────────────────────────────── */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+    }
+
+    h1, h2, h3 { font-family: var(--font-display); text-transform: uppercase; }
+
+    /* ── Header ────────────────────────────────────────────────────── */
+    header {
+      padding: 40px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: -1px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-link {
+      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      background: var(--text);
+      color: var(--bg);
+      padding: 12px 24px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-github {
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: var(--primary);
+      color: var(--text);
+    }
+
+    /* ── Hero ──────────────────────────────────────────────────────── */
+    .hero {
+      padding: 120px 0 80px;
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+    }
+
+    .hero .grid { align-items: end; }
+
+    .hero-text {
+      grid-column: 1 / 9;
+    }
+
+    .hero-meta {
+      grid-column: 10 / 13;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero h1 {
+      font-size: clamp(4rem, 10vw, 9rem);
+      line-height: 0.85;
+      letter-spacing: -0.05em;
+      margin-bottom: 40px;
+      white-space: nowrap;
+    }
+
+    .hero h1 span { color: var(--primary); }
+
+    .hero p {
+      font-size: 20px;
+      color: var(--text-muted);
+      max-width: 600px;
+    }
+
+    .meta-item {
+      margin-bottom: 24px;
+    }
+
+    .meta-label {
+      font-family: var(--font-display);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .meta-value {
+      font-size: 16px;
+    }
+
+    .meta-value a {
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .meta-value a:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* ── Marquee ───────────────────────────────────────────────────── */
+    .marquee {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      overflow: hidden;
+      display: flex;
+      white-space: nowrap;
+    }
+
+    .marquee span {
+      font-family: var(--font-display);
+      font-size: 14px;
+      text-transform: uppercase;
+      color: var(--primary);
+      padding-right: 40px;
+      animation: scroll 20s linear infinite;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* ── Features List ─────────────────────────────────────────────── */
+    .features {
+      padding: 120px 0;
+    }
+
+    .feature-row {
+      border-bottom: 1px solid var(--border);
+      padding: 60px 0;
+      align-items: start;
+    }
+
+    .feature-row:first-child {
+      border-top: 1px solid var(--border);
+    }
+
+    .f-num {
+      grid-column: 1 / 2;
+      font-family: var(--font-display);
+      color: var(--primary);
+      font-size: 24px;
+    }
+
+    .f-title {
+      grid-column: 2 / 7;
+      font-size: 48px;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .f-desc {
+      grid-column: 8 / 13;
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+
+    /* ── Changelog ─────────────────────────────────────────────────── */
+    .changelog {
+      padding: 120px 0;
+      border-top: 1px solid var(--border);
+      background: #050505;
+    }
+
+    .section-header {
+      margin-bottom: 80px;
+      text-align: center;
+    }
+
+    .section-header h2 {
+      font-size: 64px;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    .timeline {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .release {
+      border-left: 2px solid var(--border);
+      padding-left: 40px;
+      position: relative;
+      margin-bottom: 80px;
+    }
+
+    .release:last-child {
+      margin-bottom: 0;
+      border-left-color: transparent;
+    }
+
+    .release::before {
+      content: '';
+      position: absolute;
+      left: -7px;
+      top: 0;
+      width: 12px;
+      height: 12px;
+      background: var(--primary);
+    }
+
+    .version {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    .version span {
+      color: var(--primary);
+    }
+
+    .date {
+      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .changes {
+      list-style: none;
+    }
+
+    .changes li {
+      margin-bottom: 16px;
+      font-size: 18px;
+      color: var(--text-muted);
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .changes li::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-family: var(--font-display);
+    }
+
+    .changes li strong {
+      color: var(--text);
+      font-weight: normal;
+    }
+
+    /* ── Install Console ───────────────────────────────────────────── */
+    .install {
+      padding: 120px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .console {
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 40px;
+      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .console-header {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+
+    .cmd { color: var(--text); margin-bottom: 16px; }
+    .cmd::before { content: "$ "; color: var(--primary); }
+    
+    .output { margin-bottom: 32px; padding-left: 16px; border-left: 2px solid var(--border); line-height: 1.6; }
+    
+    /* ── Footer ────────────────────────────────────────────────────── */
+    footer {
+      padding: 80px 0 40px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .footer-copy {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 1024px) {
+      .hero-text { grid-column: 1 / 13; margin-bottom: 60px; }
+      .hero-meta { grid-column: 1 / 13; display: flex; flex-wrap: wrap; gap: 40px; border-bottom: none; }
+      .f-title { grid-column: 2 / 13; margin-bottom: 20px; font-size: 32px; }
+      .f-desc { grid-column: 2 / 13; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container nav">
+      <a href="#" class="logo">GFW.EXT</a>
+      <div class="nav-links">
+        <a href="#features" class="nav-link">FEATURES</a>
+        <a href="#changelog" class="nav-link">CHANGELOG</a>
+        <a href="#install" class="nav-link">INSTALL</a>
+        <a href="https://github.com/example/gfw-extension" class="btn btn-github">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+          SOURCE
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container grid">
+      <div class="hero-text">
+        <h1>GET TO<br><span>F*CKING</span><br>WORK.</h1>
+        <p>An open-source, brutalist Chrome extension that cuts the bullshit. Blocks distracting sites, enforces strict focus hours, and stops you from wasting your life online.</p>
+      </div>
+      <div class="hero-meta">
+        <div class="meta-item">
+          <span class="meta-label">VERSION</span>
+          <span class="meta-value">2.0.0</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">LICENSE</span>
+          <span class="meta-value"><a href="#">MIT</a></span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">SOURCE</span>
+          <span class="meta-value"><a href="https://github.com/example/gfw-extension">GitHub</a></span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">STATUS</span>
+          <span class="meta-value" style="color: var(--primary);">ACTIVE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee">
+    <span>OPEN SOURCE</span>
+    <span>NO TRACKING</span>
+    <span>NO TELEMETRY</span>
+    <span>100% LOCAL</span>
+    <span>OPEN SOURCE</span>
+    <span>NO TRACKING</span>
+    <span>NO TELEMETRY</span>
+    <span>100% LOCAL</span>
+    <span>OPEN SOURCE</span>
+    <span>NO TRACKING</span>
+    <span>NO TELEMETRY</span>
+    <span>100% LOCAL</span>
+  </div>
+
+  <section id="features" class="features">
+    <div class="container">
+      <div class="feature-row grid">
+        <div class="f-num">01</div>
+        <div class="f-title">NUCLEAR<br>MODE</div>
+        <div class="f-desc">An unbreakable one-hour lockdown. Once engaged, there is no pause button, no bypass, and no way out until the timer hits zero. Pure enforced isolation.</div>
+      </div>
+      <div class="feature-row grid">
+        <div class="f-num">02</div>
+        <div class="f-title">FOCUS<br>SCHEDULE</div>
+        <div class="f-desc">Set your exact working hours. The blocklist automatically activates when you're supposed to be working, and quietly disengages when you're done.</div>
+      </div>
+      <div class="feature-row grid">
+        <div class="f-num">03</div>
+        <div class="f-title">DATA &<br>STATS</div>
+        <div class="f-desc">Raw telemetry on your failures. See exactly how many times you tried to visit a blocked site today, your all-time block count, and your current focus streak.</div>
+      </div>
+      <div class="feature-row grid">
+        <div class="f-num">04</div>
+        <div class="f-title">DYNAMIC<br>PRESETS</div>
+        <div class="f-desc">Stop typing URLs manually. Instantly block entire categories—Social Media, Streaming, News, and Messaging—with a single click in the dashboard.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="changelog" class="changelog">
+    <div class="container">
+      <div class="section-header">
+        <h2>CHANGELOG_</h2>
+      </div>
+      <div class="timeline">
+        <div class="release">
+          <div class="version">v2.0<span>.0</span></div>
+          <div class="date">April 17, 2026</div>
+          <ul class="changes">
+            <li><strong>Major Rewrite:</strong> Switched to a robust Service Worker architecture</li>
+            <li><strong>Feature:</strong> Nuclear Mode for unbreakable 1-hour focus sessions</li>
+            <li><strong>Feature:</strong> Focus Schedule with daily active hours tracking</li>
+            <li><strong>Feature:</strong> Dynamic category presets (Social, Entertainment, News)</li>
+            <li><strong>UI/UX:</strong> Completely redesigned popup dashboard with dark glassmorphism</li>
+            <li><strong>Core:</strong> Rebuilt the content script to inject a fully cinematic block page inline</li>
+            <li><strong>Open Source:</strong> Refactored codebase for public release and community contributions</li>
+          </ul>
+        </div>
+        <div class="release">
+          <div class="version">v1.1<span>.0</span></div>
+          <div class="date">February 02, 2026</div>
+          <ul class="changes">
+            <li><strong>Enhancement:</strong> Added visual feedback when saving blocked URLs</li>
+            <li><strong>Fix:</strong> Resolved issue where 5-minute pause timer would reset incorrectly</li>
+            <li><strong>UI:</strong> Minor styling updates to the block screen font scaling</li>
+          </ul>
+        </div>
+        <div class="release">
+          <div class="version">v1.0<span>.0</span></div>
+          <div class="date">October 14, 2025</div>
+          <ul class="changes">
+            <li><strong>Initial Release:</strong> "Get To F*cking Work" extension launched</li>
+            <li><strong>Feature:</strong> Basic URL blocklist utilizing chrome.storage.sync</li>
+            <li><strong>Feature:</strong> Aggressive full-screen blackout on blocked sites</li>
+            <li><strong>Feature:</strong> 5-minute pause override</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install" class="install">
+    <div class="container">
+      <div class="section-header">
+        <h2>INSTALL_</h2>
+      </div>
+      <div class="console">
+        <div class="console-header">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="cmd">git clone https://github.com/example/gfw-extension.git</div>
+        <div class="output">Cloning into 'gfw-extension'...<br>done.</div>
+        
+        <div class="cmd">Open Chrome Extensions</div>
+        <div class="output">Navigate to chrome://extensions/ in your browser address bar.</div>
+        
+        <div class="cmd">Enable Developer Mode</div>
+        <div class="output">Toggle the switch in the top right corner.</div>
+        
+        <div class="cmd">Load Unpacked</div>
+        <div class="output">Click "Load unpacked" and select the cloned gfw-extension directory.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-logo">GFW.EXT</div>
+      <div class="footer-copy">© 2026. Open Source under MIT License.</div>
+    </div>
+  </footer>
+
+</body>
+</html>

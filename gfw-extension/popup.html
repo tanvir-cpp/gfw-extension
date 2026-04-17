@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8">
   <title>GFW Settings</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -38,6 +37,7 @@
       <span class="section-title">Blocked Sites</span>
     </div>
     <textarea id="sitesList" placeholder="facebook.com&#10;twitter.com&#10;youtube.com"></textarea>
+    <button class="utility-btn" id="blockCurrentTabBtn" type="button">Block Current Tab</button>
     <div class="category-chips" id="categoryChips"></div>
   </div>
 
@@ -50,9 +50,15 @@
       </label>
     </div>
     <div class="schedule-row">
-      <input type="time" class="time-input" id="scheduleStart" value="09:00">
-      <span class="schedule-separator">→</span>
-      <input type="time" class="time-input" id="scheduleEnd" value="17:00">
+      <div class="time-input-wrap">
+        <span class="time-input-label">Start</span>
+        <input type="time" class="time-input" id="scheduleStart" value="09:00">
+      </div>
+      <div class="schedule-separator">→</div>
+      <div class="time-input-wrap">
+        <span class="time-input-label">End</span>
+        <input type="time" class="time-input" id="scheduleEnd" value="17:00">
+      </div>
     </div>
     <div class="day-pills" id="dayPills">
       <div class="day-pill active" data-day="mon">M</div>
@@ -85,6 +91,7 @@
   <div class="toast" id="toast">Saved!</div>
   <div class="footer">GFW v2.0</div>
 
+  <script src="shared.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -1,8 +1,11 @@
 // ── Popup Controller ────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
+  const { CATEGORY_PRESETS, DEFAULT_SITES, normalizeSiteList, pad } = window.GFW_SHARED;
+
   // ── DOM refs ──────────────────────────────────────────────────────
   const sitesList = document.getElementById('sitesList');
+  const blockCurrentTabBtn = document.getElementById('blockCurrentTabBtn');
   const saveBtn = document.getElementById('saveBtn');
   const pauseBtn = document.getElementById('pauseBtn');
   const pauseOptions = document.getElementById('pauseOptions');
@@ -12,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const scheduleStart = document.getElementById('scheduleStart');
   const scheduleEnd = document.getElementById('scheduleEnd');
   const categoryChips = document.getElementById('categoryChips');
-  const dayPills = document.getElementById('dayPills');
   const toast = document.getElementById('toast');
 
   // Stat elements
@@ -20,23 +22,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const statTotal = document.getElementById('statTotal');
   const statStreak = document.getElementById('statStreak');
 
-  // ── Category Presets ──────────────────────────────────────────────
-  const PRESETS = {
-    'Social Media': ['facebook.com', 'twitter.com', 'x.com', 'instagram.com', 'tiktok.com', 'snapchat.com', 'threads.net'],
-    'Entertainment': ['youtube.com', 'netflix.com', 'twitch.tv', 'hulu.com', 'disneyplus.com'],
-    'News & Forums': ['reddit.com', 'news.ycombinator.com', 'buzzfeed.com', 'cnn.com', 'bbc.com'],
-    'Messaging': ['discord.com', 'web.whatsapp.com', 'web.telegram.org', 'messenger.com']
-  };
-
   // Render category chips
-  Object.keys(PRESETS).forEach(cat => {
+  Object.keys(CATEGORY_PRESETS).forEach(cat => {
     const chip = document.createElement('button');
     chip.className = 'chip';
     chip.textContent = cat;
     chip.addEventListener('click', () => {
       chip.classList.toggle('active');
       const currentSites = parseSites(sitesList.value);
-      const presetSites = PRESETS[cat];
+      const presetSites = CATEGORY_PRESETS[cat];
       if (chip.classList.contains('active')) {
         // Add preset sites not already in list
         presetSites.forEach(s => {
@@ -58,8 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.sync.get(
     ['blockedSites', 'pauseUntil', 'nuclearUntil', 'enabled', 'schedule'],
     (data) => {
-      const defaultSites = ['facebook.com', 'twitter.com', 'youtube.com', 'instagram.com', 'reddit.com', 'tiktok.com'];
-      const sites = data.blockedSites || defaultSites;
+      const sites = Array.isArray(data.blockedSites)
+        ? normalizeSiteList(data.blockedSites)
+        : DEFAULT_SITES.slice();
       sitesList.value = sites.join('\n');
 
       // Master toggle
@@ -93,10 +88,34 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   // Load stats
-  chrome.storage.local.get(['todayBlocks', 'totalBlocks', 'streakDays'], (data) => {
-    statToday.textContent = data.todayBlocks || 0;
-    statTotal.textContent = data.totalBlocks || 0;
-    statStreak.textContent = data.streakDays || 0;
+  refreshStats();
+
+  blockCurrentTabBtn.addEventListener('click', () => {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+      const [tab] = tabs || [];
+      const currentSite = tab && typeof tab.url === 'string'
+        ? normalizeSiteList([tab.url])[0]
+        : '';
+
+      if (!currentSite) {
+        showToast('Current tab cannot be blocked');
+        return;
+      }
+
+      const sites = parseSites(sitesList.value);
+      if (sites.includes(currentSite)) {
+        showToast('Current tab already blocked');
+        return;
+      }
+
+      sites.push(currentSite);
+      sitesList.value = sites.join('\n');
+      highlightChips(sites);
+
+      chrome.storage.sync.set({ blockedSites: sites }, () => {
+        showToast(`Blocked ${currentSite}`);
+      });
+    });
   });
 
   // ── Save ──────────────────────────────────────────────────────────
@@ -193,14 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Helpers ───────────────────────────────────────────────────────
   function parseSites(text) {
-    return text.split('\n')
-      .map(s => s.trim())
-      .filter(s => s.length > 0)
-      .map(s => s.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, ''));
-  }
-
-  function pad(n) {
-    return String(n).padStart(2, '0');
+    return normalizeSiteList(text);
   }
 
   function updatePauseUI(pauseUntil) {
@@ -231,10 +243,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const chips = document.querySelectorAll('.chip');
     chips.forEach(chip => {
       const cat = chip.textContent;
-      const presetSites = PRESETS[cat];
+      const presetSites = CATEGORY_PRESETS[cat];
       if (presetSites && presetSites.every(s => sites.includes(s))) {
         chip.classList.add('active');
+        return;
       }
+
+      chip.classList.remove('active');
     });
   }
 
@@ -244,15 +259,20 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => toast.classList.remove('visible'), 2000);
   }
 
+  function refreshStats() {
+    chrome.storage.local.get(['todayBlocks', 'totalBlocks', 'streakDays'], (data) => {
+      statToday.textContent = data.todayBlocks || 0;
+      statTotal.textContent = data.totalBlocks || 0;
+      statStreak.textContent = data.streakDays || 0;
+    });
+  }
+
   // Auto-refresh pause/nuclear UI
   setInterval(() => {
     chrome.storage.sync.get(['pauseUntil', 'nuclearUntil'], (data) => {
       updatePauseUI(data.pauseUntil);
       updateNuclearUI(data.nuclearUntil);
     });
-    chrome.storage.local.get(['todayBlocks', 'totalBlocks'], (data) => {
-      statToday.textContent = data.todayBlocks || 0;
-      statTotal.textContent = data.totalBlocks || 0;
-    });
+    refreshStats();
   }, 5000);
 });

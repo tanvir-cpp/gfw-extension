@@ -1,35 +1,35 @@
 // ── Background Service Worker ──────────────────────────────────────
-// Handles badge count, daily stats reset, and nuclear mode alarms.
+// Handles badge count, local-midnight resets, and nuclear mode alarms.
 
-const DEFAULT_SITES = [
-  'facebook.com', 'twitter.com', 'x.com', 'youtube.com',
-  'instagram.com', 'reddit.com', 'tiktok.com', 'twitch.tv',
-  'netflix.com', 'discord.com'
-];
+importScripts('shared.js');
 
-const CATEGORY_PRESETS = {
-  'Social Media': ['facebook.com', 'twitter.com', 'x.com', 'instagram.com', 'tiktok.com', 'snapchat.com', 'threads.net'],
-  'Entertainment': ['youtube.com', 'netflix.com', 'twitch.tv', 'hulu.com', 'disneyplus.com', 'primevideo.com'],
-  'News & Forums': ['reddit.com', 'news.ycombinator.com', 'buzzfeed.com', 'cnn.com', 'bbc.com'],
-  'Messaging': ['discord.com', 'web.whatsapp.com', 'web.telegram.org', 'messenger.com']
-};
+const {
+  DEFAULT_SITES,
+  getDateKey,
+  getNextLocalMidnightTimestamp,
+  getPreviousDateKey,
+  normalizeSiteList
+} = self.GFW_SHARED;
 
 // ── Install / Startup ──────────────────────────────────────────────
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.get(['blockedSites'], (data) => {
     if (!data.blockedSites) {
-      chrome.storage.sync.set({ blockedSites: DEFAULT_SITES });
+      chrome.storage.sync.set({ blockedSites: DEFAULT_SITES.slice() });
+      return;
     }
+
+    chrome.storage.sync.set({ blockedSites: normalizeSiteList(data.blockedSites) });
   });
-  // Initialize daily stats
+
   resetDailyStatsIfNeeded();
-  // Create alarm for daily reset (fires every 24 hours)
-  chrome.alarms.create('dailyReset', { periodInMinutes: 1440 });
+  scheduleDailyResetAlarm();
   updateBadge();
 });
 
 chrome.runtime.onStartup.addListener(() => {
   resetDailyStatsIfNeeded();
+  scheduleDailyResetAlarm();
   updateBadge();
 });
 
@@ -37,6 +37,7 @@ chrome.runtime.onStartup.addListener(() => {
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'dailyReset') {
     resetDailyStatsIfNeeded();
+    scheduleDailyResetAlarm();
   }
   if (alarm.name === 'nuclearEnd') {
     chrome.storage.sync.remove('nuclearUntil');
@@ -48,6 +49,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.type === 'blocked') {
     incrementBlockCount();
     sendResponse({ ok: true });
+    return false;
   }
   if (msg.type === 'getBadge') {
     chrome.storage.local.get(['todayBlocks'], (data) => {
@@ -55,33 +57,67 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     });
     return true; // async
   }
-  if (msg.type === 'getPresets') {
-    sendResponse({ presets: CATEGORY_PRESETS });
-    return true;
-  }
+
+  return false;
 });
 
 // ── Helpers ─────────────────────────────────────────────────────────
 function incrementBlockCount() {
-  chrome.storage.local.get(['todayBlocks', 'totalBlocks', 'todayDate'], (data) => {
-    const today = new Date().toDateString();
-    let todayBlocks = data.todayDate === today ? (data.todayBlocks || 0) : 0;
+  chrome.storage.local.get(['todayBlocks', 'totalBlocks', 'todayDate', 'streakDays', 'streakDate'], (data) => {
+    const today = getDateKey();
+    const yesterday = getPreviousDateKey();
+    let todayBlocks = data.todayDate === today ? Number(data.todayBlocks) || 0 : 0;
     todayBlocks++;
-    const totalBlocks = (data.totalBlocks || 0) + 1;
-    chrome.storage.local.set({ todayBlocks, totalBlocks, todayDate: today }, () => {
+
+    let streakDays = Number(data.streakDays) || 0;
+    if (data.streakDate === today) {
+      streakDays = Math.max(streakDays, 1);
+    } else if (data.streakDate === yesterday) {
+      streakDays++;
+    } else {
+      streakDays = 1;
+    }
+
+    chrome.storage.local.set({
+      todayBlocks,
+      totalBlocks: (Number(data.totalBlocks) || 0) + 1,
+      todayDate: today,
+      streakDate: today,
+      streakDays
+    }, () => {
       updateBadge();
     });
   });
 }
 
 function resetDailyStatsIfNeeded() {
-  chrome.storage.local.get(['todayDate'], (data) => {
-    const today = new Date().toDateString();
+  chrome.storage.local.get(['todayDate', 'streakDate', 'streakDays'], (data) => {
+    const today = getDateKey();
+    const yesterday = getPreviousDateKey();
+    const updates = {};
+
     if (data.todayDate !== today) {
-      chrome.storage.local.set({ todayBlocks: 0, todayDate: today });
-      updateBadge();
+      updates.todayBlocks = 0;
+      updates.todayDate = today;
     }
+
+    if (data.streakDate && data.streakDate !== today && data.streakDate !== yesterday) {
+      updates.streakDays = 0;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      chrome.storage.local.set(updates, () => {
+        updateBadge();
+      });
+      return;
+    }
+
+    updateBadge();
   });
+}
+
+function scheduleDailyResetAlarm() {
+  chrome.alarms.create('dailyReset', { when: getNextLocalMidnightTimestamp() });
 }
 
 function updateBadge() {
